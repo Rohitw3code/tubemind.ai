@@ -1,0 +1,157 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@keyframes glow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+@keyframes moveLight {
+  0% {
+    transform: translateX(-100%) rotate(45deg);
+  }
+  100% {
+    transform: translateX(100%) rotate(45deg);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes title-wave {
+  0%, 100% {
+    transform: rotate3d(0, 1, 0, 0deg);
+  }
+  25% {
+    transform: rotate3d(0, 1, 0, 1deg);
+  }
+  75% {
+    transform: rotate3d(0, 1, 0, -1deg);
+  }
+}
+
+@keyframes bounce-subtle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes ai-processing {
+  0% {
+    background-position: 0% 50%;
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+  }
+  50% {
+    background-position: 100% 50%;
+    box-shadow: 0 0 20px 5px rgba(239, 68, 68, 0.4);
+  }
+  100% {
+    background-position: 0% 50%;
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+  }
+}
+
+@keyframes ai-particles {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-20px) scale(0);
+    opacity: 0;
+  }
+}
+
+.perspective {
+  perspective: 1000px;
+}
+
+.animate-title-wave {
+  animation: title-wave 3s ease-in-out infinite;
+}
+
+.animate-bounce-subtle {
+  animation: bounce-subtle 2s ease-in-out infinite;
+}
+
+.animate-glow {
+  animation: glow 3s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.moving-light {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(239, 68, 68, 0.3),
+    transparent
+  );
+  transform: rotate(45deg);
+  animation: moveLight 3s infinite;
+  pointer-events: none;
+}
+
+.ai-button-processing {
+  animation: ai-processing 2s ease-in-out;
+  background-size: 200% 200%;
+  transition: all 0.3s ease-in-out;
+}
+
+.ai-particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: rgb(239, 68, 68);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.ai-particle:nth-child(1) { animation: ai-particles 1s ease-out; left: 20%; }
+.ai-particle:nth-child(2) { animation: ai-particles 1s ease-out 0.2s; left: 40%; }
+.ai-particle:nth-child(3) { animation: ai-particles 1s ease-out 0.4s; left: 60%; }
+.ai-particle:nth-child(4) { animation: ai-particles 1s ease-out 0.6s; left: 80%; }
+
+/* Custom scrollbar styles */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-track-red-900\/20::-webkit-scrollbar-track {
+  background: rgba(127, 29, 29, 0.2);
+}
+
+.scrollbar-thumb-red-500\/20::-webkit-scrollbar-thumb {
+  background: rgba(239, 68, 68, 0.2);
+  border-radius: 3px;
+}
+
+.scrollbar-thumb-red-500\/20::-webkit-scrollbar-thumb:hover {
+  background: rgba(239, 68, 68, 0.3);
+}
