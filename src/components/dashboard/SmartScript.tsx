@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { FileVideo, Trash2, Plus, RefreshCw, FileText, Copy, Link, CheckCircle2, Circle, FileTerminal, FileCheck, MessageSquare, Wand2, Edit3, ChevronDown, ChevronRight, ListFilter, ChevronLeft } from 'lucide-react';
+import { smartScriptService } from '../../services/api';
 
 interface MainContentProps {
   isFullscreen: boolean;
@@ -15,6 +16,7 @@ interface VideoInput {
   };
   showTranscript: 'none' | 'short' | 'full';
   isDropdownOpen: boolean;
+  error?: string;
 }
 
 export const SmartScript: React.FC<MainContentProps> = ({ isFullscreen }) => {
@@ -77,20 +79,34 @@ export const SmartScript: React.FC<MainContentProps> = ({ isFullscreen }) => {
     setIsProcessing(true);
     setCurrentStep(2);
     
-    const processedVideos = videoInputs.map((input, index) => ({
-      ...input,
-      status: 'completed' as const,
-      transcript: {
-        short: `Summary of Video ${index + 1}: ${input.url}\n\nThis video discusses key points about ${['artificial intelligence', 'machine learning', 'data science', 'web development'][index % 4]}. The main topics covered include implementation strategies, best practices, and real-world applications. The speaker emphasizes the importance of practical understanding and provides several illustrative examples.`,
-        long: `Full Transcript of Video ${index + 1}: ${input.url}\n\nWelcome everyone! Today we're diving deep into ${['artificial intelligence', 'machine learning', 'data science', 'web development'][index % 4]}. Let's start by understanding the fundamental concepts and then move on to more advanced topics. Throughout this presentation, we'll explore various case studies and examine how these technologies are shaping our future.\n\nKey sections covered:\n1. Introduction to core concepts\n2. Implementation strategies\n3. Best practices\n4. Real-world applications\n5. Future trends and predictions`
+    const updatedVideos = [...videoInputs];
+    
+    for (let i = 0; i < updatedVideos.length; i++) {
+      const video = updatedVideos[i];
+      if (!video.url) continue;
+      
+      try {
+        video.status = 'processing';
+        setVideoInputs([...updatedVideos]);
+        
+        const transcriptData = await smartScriptService.getTranscript(video.url);
+        
+        video.status = 'completed';
+        video.transcript = {
+          short: transcriptData.summary,
+          long: transcriptData.full
+        };
+      } catch (error) {
+        video.status = 'error';
+        video.error = error instanceof Error ? error.message : 'Failed to process video';
       }
-    }));
-
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    setVideoInputs(processedVideos);
+      
+      setVideoInputs([...updatedVideos]);
+    }
+    
     setIsProcessing(false);
-    if (processedVideos.length > 0) {
-      setSelectedVideoId(processedVideos[0].id);
+    if (updatedVideos.length > 0 && updatedVideos[0].status === 'completed') {
+      setSelectedVideoId(updatedVideos[0].id);
     }
   };
 
@@ -263,6 +279,12 @@ export const SmartScript: React.FC<MainContentProps> = ({ isFullscreen }) => {
                             </button>
                           )}
                         </div>
+                        {input.status === 'processing' && (
+                          <div className="mt-2 flex items-center space-x-2 text-yellow-400 text-[10px] sm:text-xs">
+                            <RefreshCw className="w-2.5 h-2.5 sm:w-3 sm:h-3 animate-spin" />
+                            <span>Processing...</span>
+                          </div>
+                        )}
                         {input.status === 'completed' && (
                           <div className="mt-2 flex items-center justify-between">
                             <span className="flex items-center space-x-1 text-green-400 text-[10px] sm:text-xs">
@@ -276,6 +298,11 @@ export const SmartScript: React.FC<MainContentProps> = ({ isFullscreen }) => {
                               <span>View Details</span>
                               <ChevronRight className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                             </button>
+                          </div>
+                        )}
+                        {input.status === 'error' && (
+                          <div className="mt-2 text-red-400 text-[10px] sm:text-xs">
+                            Error: {input.error}
                           </div>
                         )}
                       </div>

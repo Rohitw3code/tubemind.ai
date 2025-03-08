@@ -1,56 +1,42 @@
+import axios from 'axios';
 import { ProcessVideoRequest, ProcessVideoResponse, BatchProcessRequest, BatchProcessResponse, AnalysisStatusResponse, VideoAnalysis } from '../types/api';
 
-const API_BASE_URL = '/api';
+const API_BASE_URL = 'http://localhost:5000/api';
 
 export const smartScriptService = {
+  async getTranscript(url: string): Promise<{ full: string; summary: string }> {
+    const response = await axios.post(`${API_BASE_URL}/transcript`, { url });
+    return response.data.transcript;
+  },
+
   async analyzeVideo(request: ProcessVideoRequest): Promise<ProcessVideoResponse> {
-    const response = await fetch(`${API_BASE_URL}/smartscript/analyze`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(request),
-    });
-    return response.json();
+    const response = await axios.post(`${API_BASE_URL}/smartscript/analyze`, request);
+    return response.data;
   },
 
   async analyzeBatch(request: BatchProcessRequest): Promise<BatchProcessResponse> {
-    const response = await fetch(`${API_BASE_URL}/smartscript/analyze/batch`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(request),
-    });
-    return response.json();
+    const response = await axios.post(`${API_BASE_URL}/smartscript/analyze/batch`, request);
+    return response.data;
   },
 
   async getAnalysisStatus(jobId: string): Promise<AnalysisStatusResponse> {
-    const response = await fetch(`${API_BASE_URL}/smartscript/analyze/status/${jobId}`);
-    return response.json();
+    const response = await axios.get(`${API_BASE_URL}/smartscript/analyze/status/${jobId}`);
+    return response.data;
   },
 
   async getSmartScript(videoId: string): Promise<VideoAnalysis> {
-    const response = await fetch(`${API_BASE_URL}/smartscript/analysis/${videoId}`);
-    return response.json();
+    const response = await axios.get(`${API_BASE_URL}/smartscript/analysis/${videoId}`);
+    return response.data;
   },
 
   async updateSmartScript(videoId: string, data: Partial<VideoAnalysis>): Promise<VideoAnalysis> {
-    const response = await fetch(`${API_BASE_URL}/smartscript/analysis/${videoId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-    return response.json();
+    const response = await axios.put(`${API_BASE_URL}/smartscript/analysis/${videoId}`, data);
+    return response.data;
   },
 
   async deleteSmartScript(videoId: string): Promise<{ success: boolean }> {
-    const response = await fetch(`${API_BASE_URL}/smartscript/analysis/${videoId}`, {
-      method: 'DELETE',
-    });
-    return response.json();
+    const response = await axios.delete(`${API_BASE_URL}/smartscript/analysis/${videoId}`);
+    return response.data;
   },
 
   async generateScript(videoIds: string[], options?: {
@@ -59,14 +45,8 @@ export const smartScriptService = {
     length?: 'short' | 'medium' | 'long';
     customPrompt?: string;
   }): Promise<{ script: string; jobId: string }> {
-    const response = await fetch(`${API_BASE_URL}/smartscript/generate`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ videoIds, options }),
-    });
-    return response.json();
+    const response = await axios.post(`${API_BASE_URL}/smartscript/generate`, { videoIds, options });
+    return response.data;
   },
 
   async getGeneratedScript(jobId: string): Promise<{
@@ -74,8 +54,8 @@ export const smartScriptService = {
     script?: string;
     error?: string;
   }> {
-    const response = await fetch(`${API_BASE_URL}/smartscript/generate/${jobId}`);
-    return response.json();
+    const response = await axios.get(`${API_BASE_URL}/smartscript/generate/${jobId}`);
+    return response.data;
   },
 
   // Helper method to poll analysis status until completion
