@@ -1,10 +1,19 @@
 import React, { useState } from 'react';
 import { Sidebar } from './dashboard/Sidebar';
 import { TopNav } from './dashboard/TopNav';
-import { MainContent } from './dashboard/MainContent';
+import { SmartScript } from './dashboard/SmartScript';
+import { ScriptGenerator } from './dashboard/ScriptGenerator';
+import { TagGenerator } from './dashboard/TagGenerator';
+import { AIAgent } from './dashboard/AIAgent';
 
 export const Dashboard = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(true);
+  const [activeView, setActiveView] = useState<'smartscript' | 'scriptgenerator' | 'taggenerator' | 'aiagent'>('smartscript');
+
+  const handleMenuItemClick = (view: 'smartscript' | 'scriptgenerator' | 'taggenerator' | 'aiagent') => {
+    setActiveView(view);
+    setSidebarOpen(false);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-red-950">
@@ -25,10 +34,15 @@ export const Dashboard = () => {
         <Sidebar 
           isSidebarOpen={isSidebarOpen} 
           setSidebarOpen={setSidebarOpen}
+          onMenuItemClick={handleMenuItemClick}
+          activeView={activeView}
         />
         
         <div className={`flex-1 transition-all duration-300 ${isSidebarOpen ? 'lg:ml-64' : 'lg:ml-0'}`}>
-          <MainContent isFullscreen={!isSidebarOpen} />
+          {activeView === 'smartscript' && <SmartScript isFullscreen={!isSidebarOpen} />}
+          {activeView === 'scriptgenerator' && <ScriptGenerator />}
+          {activeView === 'taggenerator' && <TagGenerator />}
+          {activeView === 'aiagent' && <AIAgent />}
         </div>
       </div>
     </div>
