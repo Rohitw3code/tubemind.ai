@@ -2,9 +2,13 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import re
 from youtube_transcript_api import YouTubeTranscriptApi
+from groq_client import GroqClient
 
 app = Flask(__name__)
 CORS(app)
+
+# Initialize Groq client
+groq_client = GroqClient('')
 
 def extract_video_id(url: str) -> str:
     """
@@ -45,23 +49,31 @@ def get_transcript():
         
         # Create a list of transcript lines with formatted timestamps
         transcript_lines = []
+        transcript_data = ''
         for entry in transcript_list:
             start = entry["start"]
             text = entry["text"]
+            transcript_data += text
             timestamp = format_timestamp(start)
             transcript_lines.append(f"[{timestamp}] {text}")
         
         full_transcript = "\n".join(transcript_lines)
         
+        # Get AI summary using Groq
+        ai_analysis = groq_client.summarize_transcript(transcript_data)
+        
         # Create a summary (first few lines)
         summary_lines = transcript_lines[:10]
         summary = "\n".join(summary_lines) + "\n..."
+
+        print("ai symmary : ",ai_analysis)
         
         return jsonify({
             'success': True,
             'transcript': {
                 'full': full_transcript,
-                'summary': summary
+                'summary': ai_analysis,
+                'ai_analysis': ai_analysis
             }
         })
         
