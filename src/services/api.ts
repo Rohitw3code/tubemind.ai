@@ -9,6 +9,14 @@ export const smartScriptService = {
     return response.data.transcript;
   },
 
+  async mergeTranscripts(transcripts: string[], customPrompt?: string): Promise<any> {
+    const response = await axios.post(`${API_BASE_URL}/merge-transcripts`, {
+      transcripts,
+      customPrompt
+    });
+    return response.data;
+  },
+
   async analyzeVideo(request: ProcessVideoRequest): Promise<ProcessVideoResponse> {
     const response = await axios.post(`${API_BASE_URL}/smartscript/analyze`, request);
     return response.data;

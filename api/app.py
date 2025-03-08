@@ -8,7 +8,7 @@ app = Flask(__name__)
 CORS(app)
 
 # Initialize Groq client
-groq_client = GroqClient('')
+groq_client = GroqClient('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')
 
 def extract_video_id(url: str) -> str:
     """
@@ -60,21 +60,43 @@ def get_transcript():
         full_transcript = "\n".join(transcript_lines)
         
         # Get AI summary using Groq
-        ai_analysis = groq_client.summarize_transcript(transcript_data)
-        
-        # Create a summary (first few lines)
-        summary_lines = transcript_lines[:10]
-        summary = "\n".join(summary_lines) + "\n..."
-
-        print("ai symmary : ",ai_analysis)
-        
+        summary = groq_client.summarize_transcript(transcript_data)
+                
         return jsonify({
             'success': True,
             'transcript': {
                 'full': full_transcript,
-                'summary': ai_analysis,
-                'ai_analysis': ai_analysis
+                'summary': summary,
+                'ai_analysis': ''
             }
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/merge-transcripts', methods=['POST'])
+def merge_transcripts():
+    try:
+        data = request.get_json()
+        transcripts = data.get('transcripts', [])
+        custom_prompt = data.get('customPrompt', '')
+        
+        if not transcripts:
+            return jsonify({'error': 'No transcripts provided'}), 400
+        
+        # Combine all transcripts with section headers
+        combined_transcript = ""
+        for idx, transcript in enumerate(transcripts, 1):
+            combined_transcript += f"\n\n## Video {idx}\n\n{transcript}"
+            
+        # Generate merged analysis using Groq
+        merged_analysis = groq_client.summarize_transcript(
+            combined_transcript + f"\n\nCustom Instructions: {custom_prompt}" if custom_prompt else combined_transcript
+        )
+        
+        return jsonify({
+            'success': True,
+            'merged_analysis': merged_analysis
         })
         
     except Exception as e:

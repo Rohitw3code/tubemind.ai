@@ -132,23 +132,40 @@ export const SmartScript: React.FC<MainContentProps> = ({ isFullscreen }) => {
     createParticles(button);
 
     setCurrentStep(3);
-    const promptPrefix = customPrompt ? `[Custom Instructions: ${customPrompt}]\n\n` : '';
-    const selectedVideos = videoInputs.filter(v => v.status === 'completed');
     
-    let combinedScript = `${promptPrefix}# Combined Script from ${selectedVideos.length} Videos\n\n`;
-    selectedVideos.forEach((video, index) => {
-      if (video.transcript) {
-        combinedScript += `## Part ${index + 1}: ${getYouTubeVideoId(video.url)}\n\n`;
-        combinedScript += `${video.transcript.short}\n\n`;
+    try {
+      // Get all completed video transcripts
+      const completedVideos = videoInputs.filter(v => v.status === 'completed' && v.transcript);
+      const transcripts = completedVideos.map(v => v.transcript?.long || '');
+      
+      // Merge transcripts using the new endpoint
+      const result = await smartScriptService.mergeTranscripts(transcripts, customPrompt);
+      
+      if (result.success && result.merged_analysis) {
+        try {
+          const analysis = JSON.parse(result.merged_analysis);
+          setGeneratedScript(
+            `# ${analysis.suggested_title}\n\n` +
+            `## Summary\n${analysis.summary}\n\n` +
+            `## Key Points\n${analysis.key_points.map(point => `- ${point}`).join('\n')}\n\n` +
+            `## Topics\n${analysis.topics.map(topic => `- ${topic}`).join('\n')}\n\n` +
+            `## Description\n${analysis.description}`
+          );
+        } catch (e) {
+          // If parsing fails, use the raw merged analysis
+          setGeneratedScript(result.merged_analysis);
+        }
+      } else {
+        setGeneratedScript('Failed to generate script. Please try again.');
       }
-    });
+    } catch (error) {
+      console.error('Error generating script:', error);
+      setGeneratedScript('An error occurred while generating the script. Please try again.');
+    }
     
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    setGeneratedScript(combinedScript);
+    setIsGenerating(false);
     setShowGeneratedScript(true);
     setIsDrawerOpen(true);
-    setIsGenerating(false);
     button.classList.remove('ai-button-processing');
   };
 
